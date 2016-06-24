@@ -1,6 +1,6 @@
 CREATE DATABASE `todo`;
 
-SELECT * FROM todo.user;CREATE TABLE `user` (
+CREATE TABLE `user` (
   `id` varchar(45) NOT NULL,
   `name` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
