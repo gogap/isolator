@@ -41,6 +41,9 @@ func (p *ClassicObjectBuilder) RegisterObjects(objects ...Object) (err error) {
 		return
 	}
 
+	p.objectLocker.Lock()
+	defer p.objectLocker.Unlock()
+
 	for i, object := range objects {
 		if object == nil {
 			err = errors.New("object is nil, index:" + strconv.Itoa(i))
@@ -64,12 +67,9 @@ func (p *ClassicObjectBuilder) RegisterObjects(objects ...Object) (err error) {
 			return
 		}
 
-		p.objectLocker.Lock()
-		defer p.objectLocker.Unlock()
-
 		p.objects[objectName] = object
-
 	}
+
 	return
 }
 
@@ -85,16 +85,32 @@ func (p *ClassicObjectBuilder) DeriveObjects(session *Session, types ...reflect.
 			typ = typ.Elem()
 		}
 
-		if parentObj, exist := p.objects[typ.String()]; exist {
-			var childObj Object
-			if childObj, err = parentObj.Derive(session); err != nil {
-				return
+		var parentObj Object
+		var exist bool
+
+		if typ.Kind() == reflect.Interface {
+			for _, obj := range p.objects {
+				tpObj := reflect.TypeOf(obj)
+				if tpObj.ConvertibleTo(typ) {
+					parentObj = obj
+					break
+				}
 			}
-			objs = append(objs, childObj)
-		} else {
+		} else if parentObj, exist = p.objects[typ.String()]; !exist {
 			err = errors.New("object of " + typ.String() + " did not register")
 			return
 		}
+
+		if parentObj == nil {
+			err = errors.New("could not found useable object of " + typ.String())
+			return
+		}
+
+		var childObj Object
+		if childObj, err = parentObj.Derive(session); err != nil {
+			return
+		}
+		objs = append(objs, childObj)
 	}
 
 	objects = objs

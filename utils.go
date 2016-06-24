@@ -6,10 +6,7 @@ import (
 )
 
 func getStructName(v interface{}) (name string, err error) {
-	typ := reflect.TypeOf(v)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-	}
+	typ := finnalType(v)
 
 	if typ.Kind() != reflect.Struct {
 		err = errors.New("object is not a struct")
@@ -18,6 +15,29 @@ func getStructName(v interface{}) (name string, err error) {
 
 	name = typ.String()
 
+	return
+}
+
+func finnalType(v interface{}) (typ reflect.Type) {
+	t := reflect.TypeOf(v)
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	typ = t
+	return
+}
+
+func lastSecondType(v interface{}) (typ reflect.Type) {
+	t := reflect.TypeOf(v)
+	for t.Kind() == reflect.Ptr {
+		if t.Elem().Kind() == reflect.Ptr {
+			t = t.Elem()
+		} else {
+			typ = t
+			return
+		}
+	}
+	typ = t
 	return
 }
 
@@ -34,4 +54,26 @@ func objsToReflectValues(objs ...interface{}) []reflect.Value {
 	}
 
 	return values
+}
+
+func isZero(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Func, reflect.Map, reflect.Slice:
+		return v.IsNil()
+	case reflect.Array:
+		z := true
+		for i := 0; i < v.Len(); i++ {
+			z = z && isZero(v.Index(i))
+		}
+		return z
+	case reflect.Struct:
+		z := true
+		for i := 0; i < v.NumField(); i++ {
+			z = z && isZero(v.Field(i))
+		}
+		return z
+	}
+
+	z := reflect.Zero(v.Type())
+	return v.Interface() == z.Interface()
 }

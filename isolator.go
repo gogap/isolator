@@ -126,10 +126,20 @@ func (p *Isolator) Invoke(fn interface{}, args ...interface{}) (ret Result) {
 
 	ret = logicFn.Call(logicFnArgVals)
 
-	if len(ret) > 0 && session.OnError != nil {
+	errorResult := false
+	if len(ret) > 0 {
 		lastV := ret[len(ret)-1]
 		if lastV.IsValid() && !lastV.IsNil() && lastV.Type().ConvertibleTo(errType) {
-			session.OnError(session, lastV.Interface().(error))
+			errorResult = true
+			if session.OnError != nil {
+				session.OnError(session, lastV.Interface().(error))
+			}
+		}
+	}
+
+	if !errorResult {
+		if session.OnSuccess != nil {
+			session.OnSuccess(session)
 		}
 	}
 
@@ -138,5 +148,17 @@ func (p *Isolator) Invoke(fn interface{}, args ...interface{}) (ret Result) {
 
 func (p *Isolator) ObjectSessionOptions(obj Object, opts ...SessionOption) {
 	p.sessions.RegisterObjectOptions(obj, opts...)
+	return
+}
+
+func (p *Isolator) ObjectsSessionOptions(objs []Object, opts ...SessionOption) {
+	if objs == nil || opts == nil {
+		return
+	}
+
+	for i := 0; i < len(objs); i++ {
+		p.sessions.RegisterObjectOptions(objs[i], opts...)
+	}
+
 	return
 }

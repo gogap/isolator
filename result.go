@@ -7,11 +7,11 @@ import (
 
 type Result []reflect.Value
 
-func (p Result) End(fn interface{}) {
-	mapTo(fn, p)
+func (p Result) End(fn interface{}) error {
+	return mapTo(fn, p)
 }
 
-func mapTo(fn interface{}, values []reflect.Value) {
+func mapTo(fn interface{}, values []reflect.Value) (err error) {
 	fnType := reflect.TypeOf(fn)
 	if fnType.Kind() != reflect.Func {
 		panic(errors.New("result mapper func should be func"))
@@ -32,7 +32,16 @@ func mapTo(fn interface{}, values []reflect.Value) {
 		values = newV
 	}
 
+	if len(values) > 0 {
+		lastV := values[len(values)-1]
+		if lastV.IsValid() && !lastV.IsNil() && lastV.Type() == errType {
+			err = values[len(values)-1].Interface().(error)
+		}
+	}
+
 	fnValue := reflect.ValueOf(fn)
 
 	fnValue.Call(values)
+
+	return
 }
