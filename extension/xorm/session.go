@@ -15,10 +15,6 @@ type XORMEngines map[string]*xorm.Engine
 func (p XORMEngines) NewXORMSession(engineName string, isTransaction bool) isolator.SessionOption {
 	return func(s *isolator.Session) {
 		if engine, exist := p[engineName]; exist {
-			session := engine.NewSession()
-			if isTransaction {
-				session.Begin()
-			}
 
 			slist := getXORMSessionList(s)
 			exist := false
@@ -31,6 +27,11 @@ func (p XORMEngines) NewXORMSession(engineName string, isTransaction bool) isola
 
 			if exist {
 				return
+			}
+
+			session := engine.NewSession()
+			if isTransaction {
+				session.Begin()
 			}
 
 			slist = append(slist, engineName)
