@@ -127,7 +127,7 @@ func OnXORMSessionSuccess(session *isolator.Session) {
 
 		xormSession := GetXORMSession(session, name)
 		if xormSession == nil {
-			return
+			continue
 		}
 
 		xormSession.Commit()
@@ -150,7 +150,7 @@ func OnXORMSessionError(session *isolator.Session, err error) {
 
 		xormSession := GetXORMSession(session, name)
 		if xormSession == nil {
-			return
+			continue
 		}
 
 		xormSession.Rollback()
