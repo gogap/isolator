@@ -55,15 +55,17 @@ func (p *Isolator) Options(opts ...IsolatorOption) {
 }
 
 func (p *Isolator) Invoke(fn interface{}, args ...interface{}) (ret Result) {
+	return p.InvokeWithSession(nil, fn, args...)
+}
+
+func (p *Isolator) InvokeWithSession(session *Session, fn interface{}, args ...interface{}) (ret Result) {
 	var err error
-	var session *Session
 
 	defer func() {
 		if err != nil {
 			if session != nil && session.OnError != nil {
 				session.OnError(session, err)
 			}
-
 			ret = []reflect.Value{reflect.ValueOf(err)}
 		}
 	}()
@@ -110,7 +112,9 @@ func (p *Isolator) Invoke(fn interface{}, args ...interface{}) (ret Result) {
 		logicFnArgTypes[i] = typeLogicFn.In(i)
 	}
 
-	session = p.sessions.New(logicFnArgTypes...)
+	if session == nil {
+		session = p.sessions.New(logicFnArgTypes...)
+	}
 
 	var logicFnArgs []Object
 	if logicFnArgs, err = p.ObjectBuilder.DeriveObjects(session, logicFnArgTypes...); err != nil {
