@@ -31,7 +31,7 @@ func (p *TaskRepo) Derive(session *isolator.Session) (obj isolator.Object, err e
 }
 
 func (p *TaskRepo) AddTask(task models.Task) (id string, err error) {
-	xormSession := xorm.GetXORMSession(p.session)
+	xormSession := xorm.GetXORMSession(p.session, "todo")
 	if xormSession == nil {
 		err = errors.New("xorm session is nil")
 		return
@@ -45,7 +45,7 @@ func (p *TaskRepo) AddTask(task models.Task) (id string, err error) {
 }
 
 func (p *TaskRepo) GetTaskByID(id string) (task models.Task, exist bool, err error) {
-	xormSession := xorm.GetXORMSession(p.session)
+	xormSession := xorm.GetXORMSession(p.session, "todo")
 	if xormSession == nil {
 		err = errors.New("xorm session is nil")
 		return
@@ -65,7 +65,7 @@ func (p *TaskRepo) GetTaskByID(id string) (task models.Task, exist bool, err err
 }
 
 func (p *TaskRepo) GetUserTasks(userID string) (task []models.Task, err error) {
-	xormSession := xorm.GetXORMSession(p.session)
+	xormSession := xorm.GetXORMSession(p.session, "todo")
 	if xormSession == nil {
 		err = errors.New("xorm session is nil")
 		return
@@ -79,7 +79,7 @@ func (p *TaskRepo) GetUserTasks(userID string) (task []models.Task, err error) {
 }
 
 func (p *TaskRepo) AllTasks() (task []models.Task, err error) {
-	xormSession := xorm.GetXORMSession(p.session)
+	xormSession := xorm.GetXORMSession(p.session, "todo")
 	if xormSession == nil {
 		err = errors.New("xorm session is nil")
 		return

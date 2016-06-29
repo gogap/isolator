@@ -29,7 +29,7 @@ func (p *UserRepo) Derive(session *isolator.Session) (obj isolator.Object, err e
 }
 
 func (p *UserRepo) AddUser(user models.User) (err error) {
-	xormSession := xorm.GetXORMSession(p.session)
+	xormSession := xorm.GetXORMSession(p.session, "todo")
 	if xormSession == nil {
 		err = errors.New("xorm session is nil")
 		return
@@ -43,7 +43,7 @@ func (p *UserRepo) AddUser(user models.User) (err error) {
 }
 
 func (p *UserRepo) GetUser(id string) (user models.User, exist bool, err error) {
-	xormSession := xorm.GetXORMSession(p.session)
+	xormSession := xorm.GetXORMSession(p.session, "todo")
 	if xormSession == nil {
 		err = errors.New("xorm session is nil")
 		return
