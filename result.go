@@ -15,7 +15,7 @@ func mapTo(fn interface{}, values []reflect.Value) (err error) {
 
 	if len(values) > 0 {
 		lastV := values[len(values)-1]
-		if lastV.IsValid() && !lastV.IsNil() && lastV.Type() == errType {
+		if lastV.IsValid() && !lastV.IsNil() && lastV.Type().ConvertibleTo(errType) {
 			err = values[len(values)-1].Interface().(error)
 		}
 	}
